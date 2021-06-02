@@ -1,0 +1,44 @@
+version: "3.7"
+services:
+    influxdb:
+        image: influxdb:2.0.6-alpine
+        ports:
+            - '127.0.0.1:8086:8086'
+        volumes:
+            - influxdb_data:/var/lib/influxdb2
+    
+    influx-cli:
+        image: influxdb:2.0.6-alpine
+        depends_on:
+            - influxdb
+        entrypoint: influx setup --bucket btam-bucket -t ultra_secret_token -o btam-org --username=admin --password=bunnytrack --host=http://influxdb:8086 -f
+        restart: on-failure:10
+
+    telegraf:
+        image: telegraf:1.18.3-alpine
+        depends_on:
+            - influxdb
+        volumes:
+            - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+            - "C:/Program Files (x86)/Unreal Tournament GOTY/Logs:/logs:ro"
+        environment: 
+            - INFLUX_TOKEN=ultra_secret_token
+        
+    grafana:
+        image: grafana/grafana:7.5.7
+        ports:
+            - '0.0.0.0:3000:3000'
+        depends_on:
+            - influxdb
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning/:/etc/grafana/provisioning/
+            - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=bunnytrack
+            - GF_INSTALL_PLUGINS=
+
+volumes:
+    grafana_data: {}
+    influxdb_data: {}

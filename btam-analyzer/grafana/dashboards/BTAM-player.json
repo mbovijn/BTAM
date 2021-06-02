@@ -1,0 +1,440 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 2,
+  "iteration": 1623188620209,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "PlayerName"
+          }
+        ]
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "data = from(bucket: \"btam-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"btam\" and r._field == \"DoubleTapTimeInSeconds\")\r\n  |> filter(fn: (r) => r._value > 0)\r\n  |> filter(fn: (r) => r.DodgeDir =~ /^${DodgeDir:regex}$/)\r\n  |> filter(fn: (r) => r.PlayerName =~ /^${PlayerName:regex}$/)\r\n  |> filter(fn: (r) => r.IP =~ /^${IP:regex}$/)\r\n  |> group(columns: [\"PlayerName\"])\r\n\r\nquantile_50 = data\r\n  |> quantile(q: 0.50)\r\n  |> set(key: \"_field\", value: \"50% Quantile\")\r\n\r\nquantile_10 = data\r\n  |> quantile(q: 0.10)\r\n  |> set(key: \"_field\", value: \"10% Quantile\")\r\n\r\nquantile_5 = data\r\n  |> quantile(q: 0.05)\r\n  |> set(key: \"_field\", value: \"5% Quantile\")\r\n\r\nquantile_1 = data\r\n  |> quantile(q: 0.01)\r\n  |> set(key: \"_field\", value: \"1% Quantile\")\r\n\r\nminimum = data\r\n  |> min()\r\n  |> set(key: \"_field\", value: \"Minimum\")\r\n\r\nunion(tables: [quantile_50, quantile_10, quantile_5, quantile_1, minimum])\r\n  |> pivot(rowKey: [\"PlayerName\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> keep(columns: [\"PlayerName\", \"Minimum\", \"1% Quantile\", \"5% Quantile\", \"10% Quantile\", \"50% Quantile\"])\r\n  |> sort(columns: [\"Minimum\"], desc: false)",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Double tap time in seconds",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "1% Quantile": 2,
+              "10% Quantile": 4,
+              "5% Quantile": 3,
+              "50% Quantile": 5,
+              "Minimum": 1,
+              "PlayerName": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 3,
+      "options": {
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "PlayerName"
+          }
+        ]
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "data = from(bucket: \"btam-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"btam\" and r._field == \"TimeSincePreviousDodgeInSeconds\")\r\n  |> filter(fn: (r) => r.DodgeDir =~ /^${DodgeDir:regex}$/)\r\n  |> filter(fn: (r) => r.PlayerName =~ /^${PlayerName:regex}$/)\r\n  |> filter(fn: (r) => r.IP =~ /^${IP:regex}$/)\r\n  |> filter(fn: (r) => r._value < 1)\r\n  |> group(columns: [\"PlayerName\"])\r\n\r\nquantile_50 = data\r\n  |> quantile(q: 0.50)\r\n  |> set(key: \"_field\", value: \"50% Quantile\")\r\n\r\nquantile_10 = data\r\n  |> quantile(q: 0.10)\r\n  |> set(key: \"_field\", value: \"10% Quantile\")\r\n\r\nquantile_5 = data\r\n  |> quantile(q: 0.05)\r\n  |> set(key: \"_field\", value: \"5% Quantile\")\r\n\r\nquantile_1 = data\r\n  |> quantile(q: 0.01)\r\n  |> set(key: \"_field\", value: \"1% Quantile\")\r\n\r\nminimum = data\r\n  |> min()\r\n  |> set(key: \"_field\", value: \"Minimum\")\r\n\r\nunion(tables: [quantile_50, quantile_10, quantile_5, quantile_1, minimum])\r\n  |> pivot(rowKey: [\"PlayerName\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> keep(columns: [\"PlayerName\", \"Minimum\", \"1% Quantile\", \"5% Quantile\", \"10% Quantile\", \"50% Quantile\"])\r\n  |> sort(columns: [\"Minimum\"], desc: false)",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Time since previous dodge in seconds (<1s)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "1% Quantile": 2,
+              "10% Quantile": 4,
+              "5% Quantile": 3,
+              "50% Quantile": 5,
+              "Minimum": 1,
+              "PlayerName": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {}
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"btam-bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"btam\" and r._field == \"DoubleTapTimeInSeconds\")\r\n  |> filter(fn: (r) => r._value > 0)\r\n  |> filter(fn: (r) => r.DodgeDir =~ /^${DodgeDir:regex}$/)\r\n  |> filter(fn: (r) => r.PlayerName =~ /^${PlayerName:regex}$/)\r\n  |> filter(fn: (r) => r.IP =~ /^${IP:regex}$/)\r\n  |> group()\r\n  |> keep(columns: [\"_start\", \"le\", \"_value\"])\r\n  |> histogram(bins: [0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.30])\r\n  |> difference()\r\n  |> group(columns: [\"le\"])",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Histogram of double tap time in seconds",
+      "type": "bargauge"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "Fulcrum",
+          "value": "Fulcrum"
+        },
+        "datasource": null,
+        "definition": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n    bucket: v.bucket,\r\n    tag: \"PlayerName\",\r\n    predicate: (r) => true,\r\n    start: -90d\r\n)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Player Name",
+        "multi": false,
+        "name": "PlayerName",
+        "options": [],
+        "query": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n    bucket: v.bucket,\r\n    tag: \"PlayerName\",\r\n    predicate: (r) => true,\r\n    start: -90d\r\n)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": null,
+        "definition": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n    bucket: v.bucket,\r\n    tag: \"IP\",\r\n    predicate: (r) => r.PlayerName =~ /^${PlayerName:regex}$/,\r\n    start: -90d\r\n)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "IP",
+        "multi": true,
+        "name": "IP",
+        "options": [],
+        "query": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n    bucket: v.bucket,\r\n    tag: \"IP\",\r\n    predicate: (r) => r.PlayerName =~ /^${PlayerName:regex}$/,\r\n    start: -90d\r\n)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": null,
+        "definition": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n    bucket: v.bucket,\r\n    tag: \"DodgeDir\",\r\n    predicate: (r) => true,\r\n    start: -30d\r\n)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": "Dodge Direction",
+        "multi": true,
+        "name": "DodgeDir",
+        "options": [],
+        "query": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n    bucket: v.bucket,\r\n    tag: \"DodgeDir\",\r\n    predicate: (r) => true,\r\n    start: -30d\r\n)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "BTAM - Player",
+  "uid": "Op-okmeGk",
+  "version": 2
+}
